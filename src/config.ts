@@ -1,6 +1,7 @@
-export const config = {
-    id: 'eunsujung79@gmail.com',
-    password: 'Asdf99**'
+export const fb = {
+    id: 'secret@gmail.com',
+    password: 'secret',
+    url: 'https://m.facebook.com/'
 };
 
 
