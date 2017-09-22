@@ -1,6 +1,6 @@
 export const fb = {
-    id: 'secret@gmail.com',
-    password: 'secret',
+    id: 'thruthesky@hanmail.net',
+    password: 'Asdf99**,*,*',
     url: 'https://m.facebook.com/'
 };
 

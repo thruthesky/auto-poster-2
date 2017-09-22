@@ -5,9 +5,11 @@
   "main": "index.js",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
-    "nightmare": "^2.10.0"
+    "nightmare": "^2.10.0",
+    "yargs": "^9.0.1"
   },
   "devDependencies": {
+    "@types/nightmare": "^1.6.35",
     "typescript": "^2.5.2"
   },
   "scripts": {
