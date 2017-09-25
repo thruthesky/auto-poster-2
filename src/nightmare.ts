@@ -76,8 +76,11 @@ export class MyNightmare extends Nightmare {
     }
     failure(message) {
         console.log("FAILURE : " + message);
+        this._exit('App will close.');
     }
-
+    nextAction(message) {
+        console.log("NEXT ACTION : " + message);
+    }
     get argv() {
         return argv;
     }
@@ -88,5 +91,12 @@ export class MyNightmare extends Nightmare {
     async typeEnter(selector, str) {
         await this.type(selector, str);
         await this.enter(selector);
+    }
+
+    async _exit(msg) {
+        console.log(msg);
+        // await nightmare.then();
+        // await nightmare.end();
+        process.exit(1);
     }
 }
