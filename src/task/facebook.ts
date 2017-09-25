@@ -22,24 +22,39 @@ run();
 async function run() {
     await login( nightmare.argv.id, nightmare.argv.password );
     // await postad( article );
-    await goTo(fbUrl + 'gem.sonub')
+    await goTo(fbUrl + nightmare.argv.where )
 }
+
+
+
 
 
 async function login( id: string, password: string ){
 
     let $html = await goTo(fbUrl);
-
-    await nightmare.waitTest(loginButton,'Login page load.');
+    
     await nightmare.nextAction('Typing email and password.');
     await nightmare.type(usernameField, id);
-    await nightmare.typeEnter(passwordField, password);
+    await nightmare.type(passwordField, password);
     await nightmare.nextAction('Press enter to login.');
     await nightmare.enter(passwordField);
-    await nightmare.wait(5000)
-    await goTo(fbUrl)
-    await nightmare.nextAction('Test login');
-    await nightmare.waitTest(fbWallTextArea,'Looking for text area for posting.');
+
+    await nightmare.wait(100);
+
+
+    let re = await nightmare.waitDisappear( passwordField );
+    if ( re ) {
+        console.log("You are NOT in login page");
+    }
+    else {
+        console.log("You are STILL in login page");
+    }
+    await nightmare.wait( 'body' );
+
+
+    // await goTo(fbUrl)
+    // await nightmare.nextAction('Test login');
+    // await nightmare.waitTest(fbWallTextArea,'Looking for text area for posting.');
 }
 
 async function postAd( article ) {

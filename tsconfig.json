@@ -9,15 +9,11 @@
       "declaration": false,
       "noImplicitAny": false,
       "removeComments": true,
-      "outDir": "dist"
+      "outDir": "dist",
+      "lib": ["es6"]
     },
   
     "include": [
       "src/**/*.ts"
-    ],
-  
-    "files": [
-      "node_modules/typescript/lib/lib.es6.d.ts"
     ]
-  
   }

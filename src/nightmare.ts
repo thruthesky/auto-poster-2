@@ -1,6 +1,8 @@
 import * as Nightmare from 'nightmare';
 const c = require('cheerio');
 let argv = require('yargs').argv;
+declare var document;
+
 
 export class MyNightmare extends Nightmare {
     ua = {
@@ -99,4 +101,38 @@ export class MyNightmare extends Nightmare {
         // await nightmare.end();
         process.exit(1);
     }
+
+
+    /**
+     * Waits until the selector disappears.
+     * @use
+     *      - when you do not know what will appear next page,
+     *      - you only know that some in this page will disappear if page chages.
+     * 
+     * @param selector Selector to be disappears.
+     * @param timeout timeout. defualt 30 seconds.
+     * 
+     * @code
+     *     let re = await nightmare.waitDisappear( passwordField );
+            if ( re ) {
+                console.log("You are NOT in login page");
+            }
+            else {
+                console.log("You are STILL in login page");
+            }
+            await nightmare.wait( 'body' );
+     * @endcode
+     */
+    async waitDisappear( selector, timeout=30 ) {
+        let $html = null;
+        let maxWaitCount = timeout * 1000 / 100;
+        for ( let i = 0; i < maxWaitCount; i ++ ) {
+            await this.wait(100);
+            $html = await this.getHtml();
+            if ( $html.find(selector).length == 0 ) return true;
+        }
+        return false;
+    }
+
+
 }
