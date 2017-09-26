@@ -7,31 +7,32 @@ let defaultOptions = {
 
 let nightmare = new Nightmare(defaultOptions);
 nightmare.firefox();
+const facebookUrl = 'https://m.facebook.com/'
 
-const fbUrl = 'https://m.facebook.com/'
 const loginButton = 'input[name="login"]';
 const usernameField = 'input[name="email"]';
 const passwordField = 'input[name="pass"]';
-const fbWallTextArea = 'textarea[name="xc_message"]';
-const fbPostButton = 'input[name="view_post"]'
+const facebookWallTextArea = 'textarea[name="xc_message"]';
+const facebookPostButton = 'input[name="view_post"]'
 
-const article = `Reading articles may help you.`
+const stringToPost = `Testing post`
 
 run();
 
 async function run() {
     await login( nightmare.argv.id, nightmare.argv.password );
-    // await postad( article );
-    await goTo(fbUrl + nightmare.argv.where )
+    await nightmare.get( facebookUrl + nightmare.argv.where );
+    await postAd( stringToPost );
+    
 }
-
-
-
-
-
+/**
+ * 
+ * @param id 
+ * @param password 
+ */
 async function login( id: string, password: string ){
 
-    let $html = await goTo(fbUrl);
+    let $html = await nightmare.get(facebookUrl);
     
     await nightmare.nextAction('Typing email and password.');
     await nightmare.type(usernameField, id);
@@ -41,46 +42,41 @@ async function login( id: string, password: string ){
 
     await nightmare.wait(100);
 
-
     let re = await nightmare.waitDisappear( passwordField );
     if ( re ) {
-        console.log("You are NOT in login page");
+        nightmare.success("You are NOT in login page");
     }
     else {
-        console.log("You are STILL in login page");
+        nightmare.failure("You are STILL in login page");
     }
     await nightmare.wait( 'body' );
-
-
-    // await goTo(fbUrl)
-    // await nightmare.nextAction('Test login');
-    // await nightmare.waitTest(fbWallTextArea,'Looking for text area for posting.');
-}
-
-async function postAd( article ) {
-    await nightmare.waitTest(fbWallTextArea,'Looking for posting text area to write to.');
-    await nightmare.nextAction('Typing the post.');
-    await nightmare.type( fbWallTextArea, article )
-                    .click(fbPostButton);
-    await nightmare.nextAction('Looking for the article');
-    await findPost( article );
-    
 }
 /**
- *     findPost(article)
- *               .then(a=>console.log(a));
- * @param postString 
+ * Function that will do posting, works on facebook profile wall.
+ * @param textAreaToWriteTo - optional for now. Will use it to make function reusable to other wall or even other websites.
+ * @param stringToPost 
+ *  - String that will be posted. 
  */
-async function findPost( postString: string ){
+async function postAd( stringToPost: string, textAreatoWriteTo?: string ) {
+    let id = nightmare.generatePostId;
+    await nightmare.waitTest(facebookWallTextArea,'Looking for posting text area to write to.');
+    await nightmare.nextAction('Typing the post.');
+    await nightmare.type( facebookWallTextArea, stringToPost + id )
+                    .click( facebookPostButton );
+    let re = await findPostInSpan( id )
+    await ( re ) ? await nightmare.success("Post found") 
+                 : await nightmare.failure("Post not found");
+}
+/**
+ * Checks if a post exists in a span.
+ * @param query - string to find 
+ */
+async function findPostInSpan( query: string ){
+    let selector = await `span:contains('${query}')`; //cannot use for wait()
     let $html = await nightmare.getHtml();
-    let re = await $html.find(`span:contains(${postString})`).length;
-    return (re > 0)? true : false;
+     let re = await nightmare.waitAppear(selector);
+    return await re;
 }
-
-async function goTo(url: string){
-    return await nightmare.get(url);
-}
-
 
 
 
