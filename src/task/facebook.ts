@@ -1,6 +1,8 @@
 import { MyNightmare as Nightmare } from './../nightmare/nightmare';
 import { MyFileSystem as myFs } from '../file-system';
 import * as path from 'path';
+import {Url} from 'url'
+let fs = new myFs();
 
 let defaultOptions = {
     show: true, x: 1024, y: 0, width: 640, height: 400,
@@ -10,23 +12,29 @@ let defaultOptions = {
 let nightmare = new Nightmare(defaultOptions);
 nightmare.firefox();
 
-let fs = new myFs();
+
 class Facebook{
     rootUrl = 'https://m.facebook.com/'
-
+    //enter in command
     id = nightmare.argv.id;
     password = nightmare.argv.password;
+    sonubPostId = String(nightmare.argv.sonubPostId);
+    adHookMessage = nightmare.argv.hookMessage;
+    // groupUrl = nightmare.argv.groupUrl;
+    
+    //Values from text files
+    stringToPost = ( this.adHookMessage )? this.adHookMessage
+                                         : "Check our new post!";
+    groupsUrl = fs.getList( path.join(__dirname ,"../../src/facebook-setting/", "facebook-group-list.txt") );
 
+    //m.facebook.com elements
     loginButton = 'input[name="login"]';
     usernameField = 'input[name="email"]';
     passwordField = 'input[name="pass"]';
-    
     //facebook posting variables
     wallTextArea = 'textarea[name="xc_message"]';
     postButton = 'input[name="view_post"]';
-    groupPostWarn = `a:contains('${"1 post requiring approval"}')`
-    stringToPost = fs.getText( path.join( __dirname, "../../src/facebook-setting/", "facebook-post.txt" ) );
-    groupsUrl = fs.getList( path.join(__dirname ,"../../src/facebook-setting/", "facebook-group-list.txt") );
+    groupPostWarn = `a:contains('${"1 post requiring approval"}')`;
 }
 
 
@@ -43,11 +51,12 @@ async function run( facebook : Facebook ) {
     await login( facebook );
     await nightmare.get( facebook.rootUrl + 'profile.php' );
     await postAd( facebook );
-    for ( let group of facebook.groupsUrl ) {
-        await postInGroup( facebook, group );
-    }
+    // for ( let group of facebook.groupsUrl ) {
+    //     await postInGroup( facebook, group );
+    // }
 
     await nightmare._exit("Task finished.");
+    // console.log(facebook.sonubPostId)
 }
 
 /**
@@ -80,10 +89,17 @@ async function postInGroup( facebook : Facebook, groupUrl: string ) {
  *  - String that will be posted. 
  */
 async function postAd( facebook : Facebook ) {
-    let postReference = await nightmare.generatePostId;
-    // await nightmare.waitTest(facebook.wallTextArea,'Looking for posting text area to write to.');
+    let postReference = facebook.sonubPostId;
+    let backLink = 'https://sonub.com/view' + '/' + postReference;
+    let stringToPost = 
+    `${facebook.stringToPost}
+    \r\nClick the link for more details:
+    ${backLink}
+    \r\nRef#: ${postReference}`
+
+    await nightmare.waitAppear(facebook.wallTextArea);
     await nightmare.nextAction('Typing the post.');
-    await nightmare.type( facebook.wallTextArea, facebook.stringToPost + postReference )
+    await nightmare.type( facebook.wallTextArea, stringToPost )
                     .click( facebook.postButton );
     let isPending = await nightmare.waitAppear( facebook.groupPostWarn, 5 )
     
@@ -107,8 +123,8 @@ async function checkPostPending() {
 
 /**
  * on parameter id use facebook username.
- * @param id 
- * @param password 
+ * @param facebook.id 
+ * @param facebook.password 
  */
 async function login( facebook : Facebook ){
 
@@ -129,7 +145,7 @@ async function login( facebook : Facebook ){
 }
 
 /**
- * Checks if a post exists in a span.
+ * Checks if a post exists in a span.( facebook usually put posts' text into span  )
  * @param query - string to find 
  */
 async function findPost( query: string ){
